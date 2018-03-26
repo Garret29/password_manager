@@ -8,31 +8,44 @@ import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
 
 @SpringBootApplication
+@Configuration
 public class PasswordManagerApp extends Application {
 
+    private Parent root;
+    private ConfigurableApplicationContext springContext;
+
     public static void main(String[] args) {
-        launch(args);
+        launch(PasswordManagerApp.class, args);
     }
 
     @Override
     public void start(Stage primaryStage) {
-        FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("views/loginView.fxml"));
+        primaryStage.setTitle("Password Manager");
+        Scene scene = new Scene(root);
+        primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+        primaryStage.show();
+    }
 
-        Parent pane = null;
-        try {
-            pane = loader.load();
-            Scene scene = new Scene(pane);
-            primaryStage.setTitle("Password manager");
-            primaryStage.setScene(scene);
-            primaryStage.setResizable(false);
-            primaryStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void init() throws Exception {
+        springContext = SpringApplication.run(PasswordManagerApp.class);
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("views/loginView.fxml"));
+        fxmlLoader.setControllerFactory(springContext::getBean);
+        root = fxmlLoader.load();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        springContext.stop();
+        springContext.close();
     }
 }
