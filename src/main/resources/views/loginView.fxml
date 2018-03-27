@@ -5,7 +5,7 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="212.0" prefWidth="292.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.piotrowski.controller.ViewController">
+<AnchorPane prefHeight="212.0" prefWidth="292.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.piotrowski.controller.Controller">
     <children>
         <Button layoutX="112.0" layoutY="138.0" mnemonicParsing="false" onAction="#login" text="Submit" />
         <PasswordField fx:id="loginPasswordField" layoutX="96.0" layoutY="65.0" />

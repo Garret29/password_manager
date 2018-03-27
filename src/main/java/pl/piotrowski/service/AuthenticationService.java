@@ -1,22 +1,23 @@
 package pl.piotrowski.service;
 
+import javafx.beans.property.SimpleStringProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.piotrowski.util.SimplePasswordProperty;
+
 
 import java.util.Arrays;
 
 @Service
 public class AuthenticationService {
 
-    private SimplePasswordProperty password;
+    private SimpleStringProperty password;
 
     @Autowired
-    public AuthenticationService(SimplePasswordProperty loginPassword){
+    public AuthenticationService(SimpleStringProperty loginPassword){
         this.password = loginPassword;
     }
 
-    public boolean authenticate(char[] password){
-        return Arrays.equals(this.password.getPassword(), password);
+    public boolean authenticate(String password){
+        return this.password.get().equals(password);
     }
 }

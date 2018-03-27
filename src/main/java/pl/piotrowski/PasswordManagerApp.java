@@ -9,7 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
-import pl.piotrowski.controller.ViewController;
+import pl.piotrowski.controller.Controller;
 
 @SpringBootApplication
 @Configuration
@@ -37,7 +37,7 @@ public class PasswordManagerApp extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("views/loginView.fxml"));
         fxmlLoader.setControllerFactory(springContext::getBean);
         root = fxmlLoader.load();
-        ViewController controller = fxmlLoader.getController();
+        Controller controller = fxmlLoader.getController();
         controller.changeControllerFactory(springContext::getBean);
     }
 

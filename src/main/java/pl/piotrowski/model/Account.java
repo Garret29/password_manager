@@ -1,13 +1,13 @@
 package pl.piotrowski.model;
 
+
 import javafx.beans.property.SimpleStringProperty;
-import pl.piotrowski.util.SimplePasswordProperty;
 
 public class Account {
     private SimpleStringProperty name;
-    private SimplePasswordProperty password;
+    private SimpleStringProperty password;
 
-    public Account(SimpleStringProperty name, SimplePasswordProperty password) {
+    public Account(javafx.beans.property.SimpleStringProperty name, SimpleStringProperty password) {
         this.name = name;
         this.password = password;
     }
@@ -24,11 +24,15 @@ public class Account {
         this.name.set(name);
     }
 
-    public SimplePasswordProperty getPassword() {
+    public String getPassword() {
+        return password.get();
+    }
+
+    public SimpleStringProperty passwordProperty() {
         return password;
     }
 
-    public void setPassword(SimplePasswordProperty password) {
-        this.password = password;
+    public void setPassword(String password) {
+        this.password.set(password);
     }
 }
