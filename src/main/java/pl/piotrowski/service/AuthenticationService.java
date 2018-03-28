@@ -4,9 +4,6 @@ import javafx.beans.property.SimpleStringProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
-import java.util.Arrays;
-
 @Service
 public class AuthenticationService {
 

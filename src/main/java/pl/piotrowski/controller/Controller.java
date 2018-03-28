@@ -30,13 +30,21 @@ public class Controller {
     private Stage stage;
 
     @FXML
+    public PasswordField confirmPasswordField;
+    @FXML
+    public Label confirmLabel;
+    @FXML
+    public Label newPasswordLabel;
+    @FXML
+    public Label matchLabel;
+    @FXML
     private PasswordField loginPasswordField;
     @FXML
     public Label wrongLabel;
     @FXML
     public CheckBox editCheckbox;
     @FXML
-    private TextField acountField;
+    private TextField accountField;
     @FXML
     public PasswordField passwordField;
     @FXML
@@ -45,10 +53,13 @@ public class Controller {
     private ObservableList<Account> accounts;
 
     public void addAccount() {
-        if (!acountField.getText().isEmpty() || !passwordField.getText().isEmpty()) {
-            accounts.add(new Account(new SimpleStringProperty(acountField.getText()), new SimpleStringProperty(passwordField.getText())));
+        if (!accountField.getText().isEmpty() || !passwordField.getText().isEmpty()) {
+            accounts.add(new Account(new SimpleStringProperty(accountField.getText()), new SimpleStringProperty(passwordField.getText())));
             tableView.setItems(accounts);
             tableView.refresh();
+
+            accountField.clear();
+            passwordField.clear();
         }
     }
 
@@ -95,7 +106,8 @@ public class Controller {
 
         tableView.getColumns().add(nameCol);
         tableView.getColumns().add(passwordCol);
-        tableView.getColumns().add(actionShowCol);
+        // TODO: 28.03.2018 show password button
+//        tableView.getColumns().add(actionShowCol);
         tableView.getColumns().add(actionDelCol);
 
         tableView.refresh();
@@ -130,14 +142,23 @@ public class Controller {
     }
 
     private class ShowActionCell extends TableCell<Account, Boolean> {
-        final Button showButton = new Button("Delete");
+        final Button showButton = new Button("Show");
         final StackPane paddedButton = new StackPane();
 
         ShowActionCell(final TableView table) {
             paddedButton.setPadding(new Insets(3));
             paddedButton.getChildren().add(showButton);
-            showButton.setOnAction(actionEvent -> {
-                table.getSelectionModel().select(getTableRow().getIndex());
+
+            showButton.setOnMousePressed(actionEvent -> {
+                int index = getTableRow().getIndex();
+                table.getSelectionModel().select(index);
+
+            });
+
+            showButton.setOnMouseReleased(actionEvent -> {
+                int index = getTableRow().getIndex();
+                table.getSelectionModel().select(index);
+
             });
         }
 
