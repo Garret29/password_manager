@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.piotrowski.model.Account;
 import pl.piotrowski.service.AuthenticationService;
+import pl.piotrowski.service.PasswordStorageService;
 
 import java.io.IOException;
 
@@ -27,6 +28,7 @@ import java.io.IOException;
 public class Controller {
 
     private AuthenticationService authenticationService;
+    private PasswordStorageService passwordStorageService;
     private FXMLLoader loader;
     private Stage stage;
 
@@ -59,12 +61,17 @@ public class Controller {
 
     public void addAccount() {
         if (!accountField.getText().isEmpty() || !passwordField.getText().isEmpty()) {
-            accounts.add(new Account(new SimpleStringProperty(accountField.getText()), new SimpleStringProperty(passwordField.getText())));
+
+            Account account = new Account(new SimpleStringProperty(accountField.getText()), new SimpleStringProperty(passwordField.getText()));
+
+            accounts.add(account);
             tableView.setItems(accounts);
             tableView.refresh();
 
             accountField.clear();
             passwordField.clear();
+
+            passwordStorageService.save(account);
         }
     }
 
@@ -79,7 +86,7 @@ public class Controller {
     }
 
     public void firstLogin(ActionEvent actionEvent) {
-        if(!loginPasswordField.getText().isEmpty() && !confirmPasswordField.getText().isEmpty() && loginPasswordField.getText().equals(confirmPasswordField.getText())){
+        if (!loginPasswordField.getText().isEmpty() && !confirmPasswordField.getText().isEmpty() && loginPasswordField.getText().equals(confirmPasswordField.getText())) {
             Node node = (Node) actionEvent.getSource();
             initMainView(node);
         } else {
@@ -95,6 +102,7 @@ public class Controller {
             wrongLabel.setVisible(true);
         }
     }
+
 
     private void initMainView(Node node) {
         Parent pane;
@@ -212,6 +220,11 @@ public class Controller {
     @Autowired
     public void setAuthenticationService(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
+    }
+
+    @Autowired
+    public void setPasswordStorageService(PasswordStorageService passwordStorageService) {
+        this.passwordStorageService = passwordStorageService;
     }
 
     public void changeControllerFactory(Callback<Class<?>, Object> callback) {
