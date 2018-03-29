@@ -3,6 +3,8 @@ package pl.piotrowski.model;
 
 import javafx.beans.property.SimpleStringProperty;
 
+import java.util.Objects;
+
 public class Account {
     private SimpleStringProperty name;
     private SimpleStringProperty password;
@@ -34,5 +36,20 @@ public class Account {
 
     public void setPassword(String password) {
         this.password.set(password);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Account)) return false;
+        Account account = (Account) o;
+        return Objects.equals(getName(), account.getName()) &&
+                Objects.equals(getPassword(), account.getPassword());
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(getName(), getPassword());
     }
 }

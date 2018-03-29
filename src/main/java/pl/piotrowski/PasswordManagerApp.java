@@ -39,6 +39,7 @@ public class PasswordManagerApp extends Application {
         root = fxmlLoader.load();
         Controller controller = fxmlLoader.getController();
         controller.changeControllerFactory(springContext::getBean);
+        controller.initLoginView();
     }
 
     @Override

@@ -25,10 +25,15 @@ import java.io.IOException;
 
 @Component
 public class Controller {
+
     private AuthenticationService authenticationService;
     private FXMLLoader loader;
     private Stage stage;
 
+    @FXML
+    public Button loginButton;
+    @FXML
+    public Button firstLoginButton;
     @FXML
     public PasswordField confirmPasswordField;
     @FXML
@@ -38,17 +43,17 @@ public class Controller {
     @FXML
     public Label matchLabel;
     @FXML
-    private PasswordField loginPasswordField;
-    @FXML
     public Label wrongLabel;
     @FXML
     public CheckBox editCheckbox;
     @FXML
     private TextField accountField;
     @FXML
-    public PasswordField passwordField;
+    public PasswordField loginPasswordField;
     @FXML
     private TableView<Account> tableView;
+    @FXML
+    public PasswordField passwordField;
 
     private ObservableList<Account> accounts;
 
@@ -60,6 +65,25 @@ public class Controller {
 
             accountField.clear();
             passwordField.clear();
+        }
+    }
+
+    public void initLoginView() {
+        if (isFirstLogin()) {
+            confirmPasswordField.setVisible(true);
+            confirmLabel.setVisible(true);
+            newPasswordLabel.setVisible(true);
+            loginButton.setVisible(false);
+            firstLoginButton.setVisible(true);
+        }
+    }
+
+    public void firstLogin(ActionEvent actionEvent) {
+        if(!loginPasswordField.getText().isEmpty() && !confirmPasswordField.getText().isEmpty() && loginPasswordField.getText().equals(confirmPasswordField.getText())){
+            Node node = (Node) actionEvent.getSource();
+            initMainView(node);
+        } else {
+            matchLabel.setVisible(true);
         }
     }
 
@@ -130,7 +154,8 @@ public class Controller {
             });
         }
 
-        @Override protected void updateItem(Boolean item, boolean empty) {
+        @Override
+        protected void updateItem(Boolean item, boolean empty) {
             super.updateItem(item, empty);
             if (!empty) {
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
@@ -162,7 +187,8 @@ public class Controller {
             });
         }
 
-        @Override protected void updateItem(Boolean item, boolean empty) {
+        @Override
+        protected void updateItem(Boolean item, boolean empty) {
             super.updateItem(item, empty);
             if (!empty) {
                 setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
@@ -173,6 +199,10 @@ public class Controller {
         }
     }
 
+    private boolean isFirstLogin() {
+        //todo
+        return true;
+    }
 
     @Autowired
     public void setAccounts(ObservableList<Account> accounts) {

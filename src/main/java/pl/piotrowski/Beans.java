@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import pl.piotrowski.model.Account;
+import pl.piotrowski.service.util.DESEncryptor;
+import pl.piotrowski.service.util.Decryptor;
+import pl.piotrowski.service.util.Encryptor;
 
 
 @Configuration
@@ -22,6 +25,16 @@ public class Beans {
         ObservableList<Account> accounts = FXCollections.observableArrayList();
 
         return accounts;
+    }
+
+    @Bean
+    public Encryptor encryptor(){
+        return new DESEncryptor();
+    }
+    
+    @Bean
+    public Decryptor decryptor() {
+        return (Decryptor) encryptor();
     }
 
     @Bean
