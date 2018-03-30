@@ -1,41 +1,34 @@
 package pl.piotrowski.model;
 
 
-import javafx.beans.property.SimpleStringProperty;
-
 import java.util.Objects;
 
 public class Account {
-    private SimpleStringProperty name;
-    private SimpleStringProperty password;
+    private String name;
+    private String password;
 
-    public Account(javafx.beans.property.SimpleStringProperty name, SimpleStringProperty password) {
+    public Account() {
+    }
+
+    public Account(String name, String password) {
         this.name = name;
         this.password = password;
     }
 
     public String getName() {
-        return name.get();
-    }
-
-    public SimpleStringProperty nameProperty() {
         return name;
     }
 
     public void setName(String name) {
-        this.name.set(name);
+        this.name = name;
     }
 
     public String getPassword() {
-        return password.get();
-    }
-
-    public SimpleStringProperty passwordProperty() {
         return password;
     }
 
     public void setPassword(String password) {
-        this.password.set(password);
+        this.password = password;
     }
 
     @Override

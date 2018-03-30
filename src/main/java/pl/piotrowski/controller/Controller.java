@@ -20,8 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.piotrowski.model.Account;
 import pl.piotrowski.service.AuthenticationService;
+import pl.piotrowski.service.EncryptionService;
 import pl.piotrowski.service.PasswordStorageService;
 
+import java.io.File;
 import java.io.IOException;
 
 @Component
@@ -29,6 +31,7 @@ public class Controller {
 
     private AuthenticationService authenticationService;
     private PasswordStorageService passwordStorageService;
+    private EncryptionService encryptionService;
     private FXMLLoader loader;
     private Stage stage;
 
@@ -60,9 +63,9 @@ public class Controller {
     private ObservableList<Account> accounts;
 
     public void addAccount() {
-        if (!accountField.getText().isEmpty() || !passwordField.getText().isEmpty()) {
+        if (!accountField.getText().isEmpty() && !passwordField.getText().isEmpty()) {
 
-            Account account = new Account(new SimpleStringProperty(accountField.getText()), new SimpleStringProperty(passwordField.getText()));
+            Account account = new Account(accountField.getText(), passwordField.getText());
 
             accounts.add(account);
             tableView.setItems(accounts);
@@ -87,6 +90,7 @@ public class Controller {
 
     public void firstLogin(ActionEvent actionEvent) {
         if (!loginPasswordField.getText().isEmpty() && !confirmPasswordField.getText().isEmpty() && loginPasswordField.getText().equals(confirmPasswordField.getText())) {
+            encryptionService.initKeyStore(loginPasswordField.getText().toCharArray());
             Node node = (Node) actionEvent.getSource();
             initMainView(node);
         } else {
@@ -96,7 +100,9 @@ public class Controller {
 
     public void login(ActionEvent actionEvent) {
         if (authenticationService.authenticate(loginPasswordField.getText())) {
+            encryptionService.initKeyStore(loginPasswordField.getText().toCharArray());
             Node node = (Node) actionEvent.getSource();
+            accounts.addAll(passwordStorageService.load());
             initMainView(node);
         } else {
             wrongLabel.setVisible(true);
@@ -142,6 +148,7 @@ public class Controller {
 //        tableView.getColumns().add(actionShowCol);
         tableView.getColumns().add(actionDelCol);
 
+        tableView.setItems(accounts);
         tableView.refresh();
     }
 
@@ -208,8 +215,11 @@ public class Controller {
     }
 
     private boolean isFirstLogin() {
-        //todo
-        return true;
+
+        File parent = new File(System.getProperty("user.home"), ".Garret29PasswordManager");
+        File file = new File(parent, "ks_Data_xD");
+
+        return !file.exists();
     }
 
     @Autowired
@@ -225,6 +235,11 @@ public class Controller {
     @Autowired
     public void setPasswordStorageService(PasswordStorageService passwordStorageService) {
         this.passwordStorageService = passwordStorageService;
+    }
+
+    @Autowired
+    public void setEncryptionService(EncryptionService encryptionService) {
+        this.encryptionService = encryptionService;
     }
 
     public void changeControllerFactory(Callback<Class<?>, Object> callback) {

@@ -1,29 +1,27 @@
 package pl.piotrowski.service.util;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.security.*;
 import java.util.Base64;
 
 public class AESEncryptor implements Encryptor, Decryptor {
 
     private final String ALGO = "AES";
+//    private final String ALGO = "AES/CBC/PKCS5Padding";
     private byte[] key;
+    private byte[] iv = new byte[16];
 
     public AESEncryptor(SecureRandom secureRandom) {
         init(secureRandom);
     }
 
-    public String encrypt(String string) {
-        Key key = generateKey();
+    public String encrypt(String string, Key key) {
         byte[] encrypted = null;
         try {
             Cipher cipher = Cipher.getInstance(ALGO);
+//            cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
             cipher.init(Cipher.ENCRYPT_MODE, key);
             encrypted = cipher.doFinal(string.getBytes());
 
@@ -34,11 +32,12 @@ public class AESEncryptor implements Encryptor, Decryptor {
         return Base64.getEncoder().encodeToString(encrypted);
     }
 
-    public String decrypt(String string) {
-        Key key = generateKey();
+    public String decrypt(String string, Key key) {
+
         byte[] decrypted = null;
         try {
             Cipher cipher = Cipher.getInstance(ALGO);
+//            cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
             cipher.init(Cipher.DECRYPT_MODE, key);
             byte[] decoded = Base64.getDecoder().decode(string);
             decrypted = cipher.doFinal(decoded);
@@ -48,15 +47,16 @@ public class AESEncryptor implements Encryptor, Decryptor {
         return new String(decrypted);
     }
 
-    private Key generateKey() {
-        return new SecretKeySpec(key, ALGO);
+    public SecretKey generateKey() {
+        return new SecretKeySpec(key, "AES");
     }
 
     private void init(SecureRandom secureRandom){
         KeyGenerator keyGenerator;
+        secureRandom.nextBytes(iv);
         try {
-            keyGenerator = KeyGenerator.getInstance(ALGO);
-            keyGenerator.init(256, secureRandom);
+            keyGenerator = KeyGenerator.getInstance("AES");
+            keyGenerator.init(128, secureRandom);
             key = keyGenerator.generateKey().getEncoded();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

@@ -1,5 +1,6 @@
 package pl.piotrowski;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,6 +15,8 @@ import pl.piotrowski.service.util.Encryptor;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,10 +24,6 @@ import java.util.HashSet;
 
 @Configuration
 public class Beans {
-    @Bean
-    public SimpleStringProperty loginPassword(){
-        return new SimpleStringProperty("1234");
-    }
 
     @Bean
     public ObservableList<Account> accounts() {
@@ -70,6 +69,32 @@ public class Beans {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return file;
+    }
+
+    @Bean
+    @Scope("prototype")
+    public ObjectMapper objectMapper(){
+        return new ObjectMapper();
+    }
+
+    @Bean
+    public KeyStore keyStore(){
+        KeyStore keyStore = null;
+        try {
+            keyStore = KeyStore.getInstance("JCEKS");
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+        return keyStore;
+    }
+
+    @Bean
+    public File ksFile(){
+        File parent = new File(System.getProperty("user.home"), ".Garret29PasswordManager");
+        parent.mkdirs();
+        File file = new File(parent, "ks_Data_xD");
+
         return file;
     }
 }
