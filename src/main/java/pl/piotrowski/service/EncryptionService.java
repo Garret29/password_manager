@@ -33,52 +33,40 @@ public class EncryptionService {
         this.ksFile = ksFile;
     }
 
-    public String getEncryption(String string) {
+    public String getEncryption(String string) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         SecretKey secretKey = encryptor.generateKey();
         storeSecretKey(secretKey);
         return encryptor.encrypt(string, secretKey);
     }
 
-    public String getDecryption(String string) {
+    public String getDecryption(String string) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException {
         return decryptor.decrypt(string, loadSecretKey());
     }
 
-    public void initKeyStore(char[] password) {
+    public void initKeyStore(char[] password) throws IOException, NoSuchAlgorithmException, CertificateException {
         FileInputStream fileInputStream = null;
 
-        try {
-            if (ksFile.exists()) {
-                fileInputStream = new FileInputStream(ksFile);
-                keyStore.load(fileInputStream, password);
-            } else {
-                keyStore.load(null, password);
-            }
-
-            protParam = new KeyStore.PasswordProtection(password);
-        } catch (IOException | NoSuchAlgorithmException | CertificateException e) {
-            e.printStackTrace();
+        if (ksFile.exists()) {
+            fileInputStream = new FileInputStream(ksFile);
+            keyStore.load(fileInputStream, password);
+        } else {
+            keyStore.load(null, password);
         }
+
+        protParam = new KeyStore.PasswordProtection(password);
     }
 
-    public SecretKey loadSecretKey() {
-        SecretKey secretKey = null;
-        try {
-            KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry("secretKey", protParam);
-            secretKey = secretKeyEntry.getSecretKey();
-        } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
-            e.printStackTrace();
-        }
+    public SecretKey loadSecretKey() throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException {
+        SecretKey secretKey;
+        KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry("secretKey", protParam);
+        secretKey = secretKeyEntry.getSecretKey();
         return secretKey;
     }
 
-    public void storeSecretKey(SecretKey key) {
+    public void storeSecretKey(SecretKey key) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
         KeyStore.SecretKeyEntry secretKeyEntry = new KeyStore.SecretKeyEntry(key);
-        try {
-            keyStore.setEntry("secretKey", secretKeyEntry, protParam);
-            FileOutputStream fileOutputStream = new FileOutputStream(ksFile);
-            keyStore.store(fileOutputStream, protParam.getPassword());
-        } catch (KeyStoreException | NoSuchAlgorithmException | IOException | CertificateException e) {
-            e.printStackTrace();
-        }
+        keyStore.setEntry("secretKey", secretKeyEntry, protParam);
+        FileOutputStream fileOutputStream = new FileOutputStream(ksFile);
+        keyStore.store(fileOutputStream, protParam.getPassword());
     }
 }

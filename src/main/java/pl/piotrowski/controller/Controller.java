@@ -25,6 +25,10 @@ import pl.piotrowski.service.PasswordStorageService;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
 
 @Component
 public class Controller {
@@ -67,14 +71,25 @@ public class Controller {
 
             Account account = new Account(accountField.getText(), passwordField.getText());
 
-            accounts.add(account);
-            tableView.setItems(accounts);
-            tableView.refresh();
+            try {
+                passwordStorageService.save(account);
+                if (!accounts.contains(account)){
+                    accounts.add(account);
+                }
+                tableView.setItems(accounts);
+                tableView.refresh();
 
-            accountField.clear();
-            passwordField.clear();
-
-            passwordStorageService.save(account);
+                accountField.clear();
+                passwordField.clear();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (CertificateException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (KeyStoreException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -90,7 +105,15 @@ public class Controller {
 
     public void firstLogin(ActionEvent actionEvent) {
         if (!loginPasswordField.getText().isEmpty() && !confirmPasswordField.getText().isEmpty() && loginPasswordField.getText().equals(confirmPasswordField.getText())) {
-            encryptionService.initKeyStore(loginPasswordField.getText().toCharArray());
+            try {
+                initKeyStore();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (CertificateException e) {
+                e.printStackTrace();
+            }
             Node node = (Node) actionEvent.getSource();
             initMainView(node);
         } else {
@@ -100,13 +123,30 @@ public class Controller {
 
     public void login(ActionEvent actionEvent) {
         if (authenticationService.authenticate(loginPasswordField.getText())) {
-            encryptionService.initKeyStore(loginPasswordField.getText().toCharArray());
+
             Node node = (Node) actionEvent.getSource();
-            accounts.addAll(passwordStorageService.load());
+            try {
+                initKeyStore();
+                accounts.addAll(passwordStorageService.load());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (UnrecoverableEntryException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (KeyStoreException e) {
+                e.printStackTrace();
+            } catch (CertificateException e) {
+                e.printStackTrace();
+            }
             initMainView(node);
         } else {
             wrongLabel.setVisible(true);
         }
+    }
+
+    private void initKeyStore() throws NoSuchAlgorithmException, IOException, CertificateException {
+        encryptionService.initKeyStore(loginPasswordField.getText().toCharArray());
     }
 
 
@@ -162,7 +202,7 @@ public class Controller {
             deleteButton.setOnAction(actionEvent -> {
                 int index = getTableRow().getIndex();
                 table.getSelectionModel().select(index);
-                accounts.remove(table.getSelectionModel().getSelectedItem());
+                remove(table.getSelectionModel().getSelectedItem());
                 table.setItems(accounts);
                 table.getSelectionModel().select(index);
                 table.refresh();
@@ -178,6 +218,21 @@ public class Controller {
             } else {
                 setGraphic(null);
             }
+        }
+    }
+
+    public void remove(Account account){
+        try {
+            passwordStorageService.remove(account);
+            accounts.remove(account);
+        } catch (CertificateException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
