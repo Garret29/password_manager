@@ -9,7 +9,6 @@ import java.util.Base64;
 public class AESEncryptor implements Encryptor, Decryptor {
 
     private final String ALGO = "AES";
-//    private final String ALGO = "AES/CBC/PKCS5Padding";
     private byte[] key;
     private byte[] iv = new byte[16];
 

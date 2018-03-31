@@ -1,7 +1,6 @@
 package pl.piotrowski.controller;
 
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,6 +11,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -25,6 +26,8 @@ import pl.piotrowski.service.PasswordStorageService;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
@@ -37,7 +40,6 @@ public class Controller {
     private PasswordStorageService passwordStorageService;
     private EncryptionService encryptionService;
     private FXMLLoader loader;
-    private Stage stage;
 
     @FXML
     public Button loginButton;
@@ -81,14 +83,8 @@ public class Controller {
 
                 accountField.clear();
                 passwordField.clear();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (CertificateException e) {
-                e.printStackTrace();
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (KeyStoreException e) {
-                e.printStackTrace();
+            } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+                showExceptionDialog(e);
             }
         }
     }
@@ -106,13 +102,9 @@ public class Controller {
     public void firstLogin(ActionEvent actionEvent) {
         if (!loginPasswordField.getText().isEmpty() && !confirmPasswordField.getText().isEmpty() && loginPasswordField.getText().equals(confirmPasswordField.getText())) {
             try {
-                initKeyStore();
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (CertificateException e) {
-                e.printStackTrace();
+                initServices();
+            } catch (NoSuchAlgorithmException | IOException | CertificateException e) {
+                showExceptionDialog(e);
             }
             Node node = (Node) actionEvent.getSource();
             initMainView(node);
@@ -121,43 +113,65 @@ public class Controller {
         }
     }
 
+    private void showExceptionDialog(Exception e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(e.getMessage());
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        e.printStackTrace(printWriter);
+        String text = stringWriter.toString();
+        Label label = new Label("Error details:");
+        TextArea textArea = new TextArea(text);
+        textArea.setEditable(false);
+        textArea.setWrapText(true);
+
+        textArea.setMaxWidth(Double.MAX_VALUE);
+        textArea.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(textArea, Priority.ALWAYS);
+
+        GridPane expContent = new GridPane();
+        expContent.setMaxWidth(Double.MAX_VALUE);
+        expContent.add(label, 0, 0);
+        expContent.add(textArea, 0, 1);
+
+        alert.getDialogPane().setExpandableContent(expContent);
+
+        alert.showAndWait();
+    }
+
     public void login(ActionEvent actionEvent) {
-        if (authenticationService.authenticate(loginPasswordField.getText())) {
 
             Node node = (Node) actionEvent.getSource();
             try {
-                initKeyStore();
+                initServices();
                 accounts.addAll(passwordStorageService.load());
+                initMainView(node);
             } catch (IOException e) {
-                e.printStackTrace();
-            } catch (UnrecoverableEntryException e) {
-                e.printStackTrace();
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (KeyStoreException e) {
-                e.printStackTrace();
-            } catch (CertificateException e) {
-                e.printStackTrace();
+                if(e.getCause() instanceof UnrecoverableEntryException){
+                    wrongLabel.setVisible(true);
+                } else {
+                    showExceptionDialog(e);
+                }
+            } catch (CertificateException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
+                showExceptionDialog(e);
             }
-            initMainView(node);
-        } else {
-            wrongLabel.setVisible(true);
-        }
     }
 
-    private void initKeyStore() throws NoSuchAlgorithmException, IOException, CertificateException {
+    private void initServices() throws NoSuchAlgorithmException, IOException, CertificateException {
         encryptionService.initKeyStore(loginPasswordField.getText().toCharArray());
     }
 
 
     private void initMainView(Node node) {
         Parent pane;
-        stage = new Stage();
+        Stage stage = new Stage();
         Window source = node.getScene().getWindow();
         try {
             pane = loader.load();
         } catch (IOException e) {
-            e.printStackTrace();
+            showExceptionDialog(e);
             return;
         }
         Scene scene = new Scene(pane);
@@ -221,18 +235,12 @@ public class Controller {
         }
     }
 
-    public void remove(Account account){
+    private void remove(Account account){
         try {
             passwordStorageService.remove(account);
             accounts.remove(account);
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException e) {
+            showExceptionDialog(e);
         }
     }
 

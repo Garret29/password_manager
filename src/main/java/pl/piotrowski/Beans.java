@@ -79,14 +79,8 @@ public class Beans {
     }
 
     @Bean
-    public KeyStore keyStore(){
-        KeyStore keyStore = null;
-        try {
-            keyStore = KeyStore.getInstance("JCEKS");
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        }
-        return keyStore;
+    public KeyStore keyStore() throws KeyStoreException {
+        return KeyStore.getInstance("JCEKS");
     }
 
     @Bean
