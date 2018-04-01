@@ -1,6 +1,9 @@
 package pl.piotrowski.model;
 
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 import java.util.Objects;
 
 public class Account {
@@ -15,34 +18,37 @@ public class Account {
         this.password = password;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Account)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+
         Account account = (Account) o;
-        return Objects.equals(getName(), account.getName()) &&
-                Objects.equals(getPassword(), account.getPassword());
+
+        if (!name.equals(account.name)) return false;
+        return password.equals(account.password);
     }
 
     @Override
     public int hashCode() {
-
-        return Objects.hash(getName(), getPassword());
+        int result = name.hashCode();
+        result = 31 * result + password.hashCode();
+        return result;
     }
 }

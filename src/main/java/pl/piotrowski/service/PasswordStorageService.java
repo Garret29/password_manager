@@ -36,7 +36,7 @@ public class PasswordStorageService {
         persist();
     }
 
-    private void persist() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
+    public void persist() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
         String encryptedString;
         String string = objectMapper.writeValueAsString(accountsSet);
         encryptedString = encryptionService.getEncryption(string);

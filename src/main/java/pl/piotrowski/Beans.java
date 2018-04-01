@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import javafx.fxml.FXMLLoader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,13 +64,8 @@ public class Beans {
     public File encryptedFile(){
         File parent = new File(System.getProperty("user.home"), ".Garret29PasswordManager");
         parent.mkdirs();
-        File file = new File(parent, "importantData_xD");
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return file;
+
+        return new File(parent, "importantData_xD");
     }
 
     @Bean
@@ -90,5 +86,10 @@ public class Beans {
         File file = new File(parent, "ks_Data_xD");
 
         return file;
+    }
+
+    @Bean
+    public ObservableSet<Account> accountWithVisiblePassword(){
+        return FXCollections.observableSet();
     }
 }
