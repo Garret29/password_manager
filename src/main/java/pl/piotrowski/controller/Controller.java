@@ -193,7 +193,7 @@ public class Controller {
         Scene scene = new Scene(pane);
         stage.setTitle("Password manager");
         stage.setScene(scene);
-        stage.setResizable(false);
+        stage.setResizable(true);
         source.hide();
         stage.show();
 

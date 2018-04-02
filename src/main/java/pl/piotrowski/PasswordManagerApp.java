@@ -27,7 +27,7 @@ public class PasswordManagerApp extends Application {
         primaryStage.setTitle("Password Manager");
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
-        primaryStage.setResizable(true);
+        primaryStage.setResizable(false);
         primaryStage.show();
     }
 
