@@ -1,11 +1,5 @@
 package pl.piotrowski.model;
 
-
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-
-import java.util.Objects;
-
 public class Account {
     private String name;
     private String password;
