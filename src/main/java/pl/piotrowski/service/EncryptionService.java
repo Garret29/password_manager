@@ -6,15 +6,15 @@ import pl.piotrowski.service.util.AESEncryptor;
 import pl.piotrowski.service.util.Decryptor;
 import pl.piotrowski.service.util.Encryptor;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableEntryException;
+import java.security.*;
 import java.security.cert.CertificateException;
 
 @Service
@@ -33,13 +33,13 @@ public class EncryptionService {
         this.ksFile = ksFile;
     }
 
-    public String getEncryption(String string) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    public String getEncryption(String string) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchPaddingException {
         SecretKey secretKey = encryptor.generateKey();
         storeSecretKey(secretKey);
         return encryptor.encrypt(string, secretKey);
     }
 
-    public String getDecryption(String string) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException {
+    public String getDecryption(String string) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException {
         return decryptor.decrypt(string, loadSecretKey());
     }
 

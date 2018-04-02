@@ -24,14 +24,17 @@ import javafx.util.StringConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import pl.piotrowski.model.Account;
-import pl.piotrowski.service.AuthenticationService;
 import pl.piotrowski.service.EncryptionService;
 import pl.piotrowski.service.PasswordStorageService;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
@@ -61,7 +64,6 @@ public class Controller {
     public PasswordField loginPasswordField;
     @FXML
     public PasswordField passwordField;
-    private AuthenticationService authenticationService;
     private PasswordStorageService passwordStorageService;
     private EncryptionService encryptionService;
     private FXMLLoader loader;
@@ -74,6 +76,12 @@ public class Controller {
     private ObservableSet<Account> accountWithVisiblePassword;
 
     private File encryptedFile;
+
+    public static String mask(String string, char ch) {
+        char[] chars = new char[string.length()];
+        Arrays.fill(chars, ch);
+        return new String(chars);
+    }
 
     public void addAccount() {
         if (!accountField.getText().isEmpty() && !passwordField.getText().isEmpty()) {
@@ -90,7 +98,7 @@ public class Controller {
 
                 accountField.clear();
                 passwordField.clear();
-            } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException | BadPaddingException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException e) {
                 showExceptionDialog(e);
             }
         }
@@ -163,7 +171,7 @@ public class Controller {
             } else {
                 showExceptionDialog(e);
             }
-        } catch (CertificateException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
+        } catch (CertificateException | NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException | BadPaddingException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException e) {
             showExceptionDialog(e);
         }
     }
@@ -171,7 +179,6 @@ public class Controller {
     private void initServices() throws NoSuchAlgorithmException, IOException, CertificateException {
         encryptionService.initKeyStore(loginPasswordField.getText().toCharArray());
     }
-
 
     private void initMainView(Node node) {
         Parent pane;
@@ -195,9 +202,15 @@ public class Controller {
 
         TableColumn<Account, String> passwordCol = new TableColumn<>("Password");
         passwordCol.setCellValueFactory(cellData -> {
-            char[] chars = new char[cellData.getValue().getPassword().length()];
-            Arrays.fill(chars, '*');
-            return new SimpleStringProperty(new String(chars));
+            Account account = cellData.getValue();
+            if (!accountWithVisiblePassword.contains(account)) {
+                char[] chars = new char[account.getPassword().length()];
+                Arrays.fill(chars, '*');
+                return new SimpleStringProperty(new String(chars));
+            } else {
+                return new SimpleStringProperty(account.getPassword());
+            }
+
         });
 
         passwordCol.setCellFactory(c -> {
@@ -221,21 +234,36 @@ public class Controller {
                     (obs, oldItem, newItem) -> updateCell(textFieldTableCell)
             );
 
-            accountWithVisiblePassword.addListener((SetChangeListener<Account>) change -> {
-                updateCell(textFieldTableCell);
+            textFieldTableCell.editingProperty().addListener((obs, oldItem, newItem) -> {
+                Account account = tableView.getItems().get(textFieldTableCell.getIndex());
+                textFieldTableCell.setText(account.getPassword());
+            });
+
+            accountWithVisiblePassword.addListener((SetChangeListener<Account>) change -> updateCell(textFieldTableCell));
+
+            tableView.editableProperty().addListener((obs, oldItem, newItem) -> {
+                int index = textFieldTableCell.getIndex();
+                if (index >= 0 && index < tableView.getItems().size()) {
+                    Account account = tableView.getItems().get(textFieldTableCell.getIndex());
+                    if (newItem) {
+                        accountWithVisiblePassword.add(account);
+                    } else {
+                        accountWithVisiblePassword.remove(account);
+                    }
+                }
             });
 
             return textFieldTableCell;
         });
 
-        //todo setOnEditStart/End mask with stars
         passwordCol.setOnEditCommit(
                 event -> {
-                    event.getTableView().getItems().get(event.getTablePosition().getRow()).setPassword(event.getNewValue());
+                    Account account = event.getTableView().getItems().get(event.getTablePosition().getRow());
+                    account.setPassword(event.getNewValue());
                     try {
                         passwordStorageService.persist();
-                    } catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException e) {
-                        event.getTableView().getItems().get(event.getTablePosition().getRow()).setPassword(event.getOldValue());
+                    } catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
+                        account.setPassword(event.getOldValue());
                         showExceptionDialog(e);
                     }
                 }
@@ -261,11 +289,23 @@ public class Controller {
         tableView.refresh();
     }
 
+    private void updateCell(TextFieldTableCell<Account, String> textFieldTableCell) {
+        int index = textFieldTableCell.getIndex();
+        if (index >= 0 && index < tableView.getItems().size()) {
+            Account account = tableView.getItems().get(index);
+            if (accountWithVisiblePassword.contains(account)) {
+                textFieldTableCell.setText(account.getPassword());
+            } else {
+                textFieldTableCell.setText(mask(account.getPassword(), '*'));
+            }
+        }
+    }
+
     private void remove(Account account) {
         try {
             passwordStorageService.remove(account);
             accounts.remove(account);
-        } catch (CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException e) {
+        } catch (CertificateException | IOException | KeyStoreException | NoSuchAlgorithmException | BadPaddingException | InvalidKeyException | IllegalBlockSizeException | NoSuchPaddingException e) {
             showExceptionDialog(e);
         }
     }
@@ -281,11 +321,6 @@ public class Controller {
     @Autowired
     public void setAccounts(ObservableList<Account> accounts) {
         this.accounts = accounts;
-    }
-
-    @Autowired
-    public void setAuthenticationService(AuthenticationService authenticationService) {
-        this.authenticationService = authenticationService;
     }
 
     @Autowired
@@ -323,21 +358,6 @@ public class Controller {
     @Autowired
     public void setEncryptedFile(File encryptedFile) {
         this.encryptedFile = encryptedFile;
-    }
-
-    private void updateCell(TextFieldTableCell<Account, String> textFieldTableCell) {
-        int index = textFieldTableCell.getIndex();
-        System.out.println(index);
-        if (index >= 0 && index < tableView.getItems().size()) {
-            Account account = tableView.getItems().get(index);
-            if (accountWithVisiblePassword.contains(account)) {
-                textFieldTableCell.setText(account.getPassword());
-            } else {
-                char[] chars = new char[account.getPassword().length()];
-                Arrays.fill(chars, '*');
-                textFieldTableCell.setText(new String(chars));
-            }
-        }
     }
 
     private class DeleteActionCell extends TableCell<Account, Boolean> {
@@ -388,6 +408,8 @@ public class Controller {
                 table.getSelectionModel().select(index);
                 accountWithVisiblePassword.remove(table.getSelectionModel().getSelectedItem());
             });
+
+            table.editableProperty().addListener((observable, oldValue, newValue) -> showButton.setDisable(newValue));
         }
 
         @Override
