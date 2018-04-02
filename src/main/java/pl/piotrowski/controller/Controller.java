@@ -285,6 +285,10 @@ public class Controller {
         tableView.getColumns().add(actionShowCol);
         tableView.getColumns().add(actionDelCol);
 
+        tableView.getColumns().forEach(accountTableColumn -> {
+            accountTableColumn.setResizable(false);
+        });
+
         tableView.setItems(accounts);
         tableView.refresh();
     }

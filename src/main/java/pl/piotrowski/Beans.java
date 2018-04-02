@@ -1,7 +1,6 @@
 package pl.piotrowski;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
@@ -15,11 +14,9 @@ import pl.piotrowski.service.util.Decryptor;
 import pl.piotrowski.service.util.Encryptor;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.SecureRandom;
-import java.util.HashMap;
 import java.util.HashSet;
 
 
@@ -28,9 +25,7 @@ public class Beans {
 
     @Bean
     public ObservableList<Account> accounts() {
-        ObservableList<Account> accounts = FXCollections.observableArrayList();
-
-        return accounts;
+        return FXCollections.observableArrayList();
     }
 
     @Bean
@@ -64,6 +59,7 @@ public class Beans {
     public File encryptedFile(){
         File parent = new File(System.getProperty("user.home"), ".Garret29PasswordManager");
         parent.mkdirs();
+
 
         return new File(parent, "importantData_xD");
     }
