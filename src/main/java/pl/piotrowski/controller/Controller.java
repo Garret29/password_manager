@@ -1,10 +1,12 @@
 package pl.piotrowski.controller;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,6 +16,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -34,10 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableEntryException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 
@@ -76,6 +77,7 @@ public class Controller {
     private ObservableSet<Account> accountWithVisiblePassword;
 
     private File encryptedFile;
+    private File ksFile;
 
     public static String mask(String string, char ch) {
         char[] chars = new char[string.length()];
@@ -111,6 +113,9 @@ public class Controller {
             newPasswordLabel.setVisible(true);
             loginButton.setVisible(false);
             firstLoginButton.setVisible(true);
+            firstLoginButton.setDefaultButton(true);
+        } else {
+            loginButton.setDefaultButton(true);
         }
     }
 
@@ -166,7 +171,7 @@ public class Controller {
             }
             initMainView(node);
         } catch (IOException e) {
-            if (e.getCause() instanceof UnrecoverableEntryException) {
+            if (e.getMessage().contains("password was incorrect")) {
                 wrongLabel.setVisible(true);
             } else {
                 showExceptionDialog(e);
@@ -271,23 +276,30 @@ public class Controller {
 
         TableColumn<Account, Boolean> actionShowCol = new TableColumn<>("Show");
         TableColumn<Account, Boolean> actionDelCol = new TableColumn<>("Delete");
+        TableColumn<Account, Boolean> actionCopyCol = new TableColumn<>("Copy");
         actionShowCol.setSortable(false);
         actionDelCol.setSortable(false);
+        actionShowCol.setSortable(false);
 
         actionShowCol.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
         actionDelCol.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
+        actionCopyCol.setCellValueFactory(features -> new SimpleBooleanProperty(features.getValue() != null));
 
         actionDelCol.setCellFactory(booleanTableColumn -> new DeleteActionCell(tableView));
         actionShowCol.setCellFactory(booleanTableColumn -> new ShowActionCell(tableView));
+        actionCopyCol.setCellFactory(booleanTableColumn -> new CopyActionCell(tableView));
+
+        nameCol.setResizable(true);
+        passwordCol.setResizable(true);
+        actionDelCol.setResizable(false);
+        actionShowCol.setResizable(false);
+        actionCopyCol.setResizable(false);
 
         tableView.getColumns().add(nameCol);
         tableView.getColumns().add(passwordCol);
         tableView.getColumns().add(actionShowCol);
         tableView.getColumns().add(actionDelCol);
-
-        tableView.getColumns().forEach(accountTableColumn -> {
-            accountTableColumn.setResizable(false);
-        });
+        tableView.getColumns().add(actionCopyCol);
 
         tableView.setItems(accounts);
         tableView.refresh();
@@ -315,11 +327,7 @@ public class Controller {
     }
 
     private boolean isFirstLogin() {
-
-        File parent = new File(System.getProperty("user.home"), ".Garret29PasswordManager");
-        File file = new File(parent, "ks_Data_xD");
-
-        return !file.exists();
+        return !ksFile.exists();
     }
 
     @Autowired
@@ -362,6 +370,52 @@ public class Controller {
     @Autowired
     public void setEncryptedFile(File encryptedFile) {
         this.encryptedFile = encryptedFile;
+    }
+
+    @Autowired
+    public void setKsFile(File ksFile) {
+        this.ksFile = ksFile;
+    }
+
+    private class CopyActionCell extends TableCell<Account, Boolean> {
+        final Button copyButton = new Button("Copy");
+        final StackPane paddedButton = new StackPane();
+
+        CopyActionCell(final TableView<Account> table) {
+            paddedButton.setPadding(new Insets(3));
+            paddedButton.getChildren().add(copyButton);
+            copyButton.setOnAction(actionEvent -> {
+                int index = getTableRow().getIndex();
+                table.getSelectionModel().select(index);
+                Account account = table.getSelectionModel().getSelectedItem();
+                Clipboard clipboard = Clipboard.getSystemClipboard();
+                ClipboardContent clipboardContent = new ClipboardContent();
+                clipboardContent.putString(account.getPassword());
+                clipboard.setContent(clipboardContent);
+                Thread thread = new Thread(()->{
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        Platform.runLater(clipboard::clear);
+                    }
+                });
+                thread.start();
+
+            });
+        }
+
+        @Override
+        protected void updateItem(Boolean item, boolean empty) {
+            super.updateItem(item, empty);
+            if (!empty) {
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                setGraphic(paddedButton);
+            } else {
+                setGraphic(null);
+            }
+        }
     }
 
     private class DeleteActionCell extends TableCell<Account, Boolean> {

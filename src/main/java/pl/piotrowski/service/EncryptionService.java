@@ -44,10 +44,10 @@ public class EncryptionService {
     }
 
     public void initKeyStore(char[] password) throws IOException, NoSuchAlgorithmException, CertificateException {
-        FileInputStream fileInputStream = null;
+
 
         if (ksFile.exists()) {
-            fileInputStream = new FileInputStream(ksFile);
+            FileInputStream fileInputStream = new FileInputStream(ksFile);
             keyStore.load(fileInputStream, password);
         } else {
             keyStore.load(null, password);
