@@ -6,8 +6,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -18,6 +18,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -27,6 +28,7 @@ import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import pl.piotrowski.controller.util.ControllerUtils;
 import pl.piotrowski.model.Account;
 import pl.piotrowski.service.EncryptionService;
 import pl.piotrowski.service.PasswordStorageService;
@@ -38,7 +40,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 
@@ -65,9 +70,6 @@ public class Controller {
     public PasswordField loginPasswordField;
     @FXML
     public PasswordField passwordField;
-    private PasswordStorageService passwordStorageService;
-    private EncryptionService encryptionService;
-    private FXMLLoader loader;
     @FXML
     private TextField accountField;
     @FXML
@@ -76,14 +78,11 @@ public class Controller {
     private ObservableList<Account> accounts;
     private ObservableSet<Account> accountWithVisiblePassword;
 
+    private PasswordStorageService passwordStorageService;
+    private EncryptionService encryptionService;
+    private FXMLLoader loader;
     private File encryptedFile;
     private File ksFile;
-
-    public static String mask(String string, char ch) {
-        char[] chars = new char[string.length()];
-        Arrays.fill(chars, ch);
-        return new String(chars);
-    }
 
     public void addAccount() {
         if (!accountField.getText().isEmpty() && !passwordField.getText().isEmpty()) {
@@ -107,26 +106,35 @@ public class Controller {
     }
 
     public void initLoginView() {
+        loginPasswordField.requestFocus();
         if (isFirstLogin()) {
             confirmPasswordField.setVisible(true);
             confirmLabel.setVisible(true);
             newPasswordLabel.setVisible(true);
             loginButton.setVisible(false);
             firstLoginButton.setVisible(true);
-            firstLoginButton.setDefaultButton(true);
+            confirmPasswordField.setOnKeyPressed((keyEvent)->{
+                if (keyEvent.getCode().equals(KeyCode.ENTER)){
+                    firstLogin(keyEvent);
+                }
+            });
         } else {
-            loginButton.setDefaultButton(true);
+            loginPasswordField.setOnKeyPressed((keyEvent)->{
+                if (keyEvent.getCode().equals(KeyCode.ENTER)){
+                    login(keyEvent);
+                }
+            });
         }
     }
 
-    public void firstLogin(ActionEvent actionEvent) {
+    public void firstLogin(Event event) {
         if (!loginPasswordField.getText().isEmpty() && !confirmPasswordField.getText().isEmpty() && loginPasswordField.getText().equals(confirmPasswordField.getText())) {
             try {
                 initServices();
             } catch (NoSuchAlgorithmException | IOException | CertificateException e) {
                 showExceptionDialog(e);
             }
-            Node node = (Node) actionEvent.getSource();
+            Node node = (Node) event.getSource();
             initMainView(node);
         } else {
             matchLabel.setVisible(true);
@@ -161,9 +169,9 @@ public class Controller {
         alert.showAndWait();
     }
 
-    public void login(ActionEvent actionEvent) {
+    public void login(Event event) {
 
-        Node node = (Node) actionEvent.getSource();
+        Node node = (Node) event.getSource();
         try {
             initServices();
             if (encryptedFile.exists()) {
@@ -312,7 +320,7 @@ public class Controller {
             if (accountWithVisiblePassword.contains(account)) {
                 textFieldTableCell.setText(account.getPassword());
             } else {
-                textFieldTableCell.setText(mask(account.getPassword(), '*'));
+                textFieldTableCell.setText(ControllerUtils.mask(account.getPassword(), '*'));
             }
         }
     }
@@ -358,10 +366,6 @@ public class Controller {
         tableView.setEditable(((CheckBox) actionEvent.getSource()).selectedProperty().getValue());
     }
 
-    public ObservableSet<Account> getAccountWithVisiblePassword() {
-        return accountWithVisiblePassword;
-    }
-
     @Autowired
     public void setAccountWithVisiblePassword(ObservableSet<Account> accountWithVisiblePassword) {
         this.accountWithVisiblePassword = accountWithVisiblePassword;
@@ -392,7 +396,7 @@ public class Controller {
                 ClipboardContent clipboardContent = new ClipboardContent();
                 clipboardContent.putString(account.getPassword());
                 clipboard.setContent(clipboardContent);
-                Thread thread = new Thread(()->{
+                Thread thread = new Thread(() -> {
                     try {
                         Thread.sleep(10000);
                     } catch (InterruptedException e) {

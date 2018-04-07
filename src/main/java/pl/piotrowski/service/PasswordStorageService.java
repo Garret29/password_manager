@@ -60,7 +60,7 @@ public class PasswordStorageService {
         persist();
     }
 
-    public Account[] getAccounts(){
+    private Account[] getAccounts(){
         Account[] accounts = new Account[accountsSet.toArray().length];
         return accountsSet.toArray(accounts);
     }

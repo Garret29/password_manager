@@ -2,7 +2,6 @@ package pl.piotrowski.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pl.piotrowski.service.util.AESEncryptor;
 import pl.piotrowski.service.util.Decryptor;
 import pl.piotrowski.service.util.Encryptor;
 
@@ -33,13 +32,13 @@ public class EncryptionService {
         this.ksFile = ksFile;
     }
 
-    public String getEncryption(String string) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchPaddingException {
+    String getEncryption(String string) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchPaddingException {
         SecretKey secretKey = encryptor.generateKey();
         storeSecretKey(secretKey);
         return encryptor.encrypt(string, secretKey);
     }
 
-    public String getDecryption(String string) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException {
+    String getDecryption(String string) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException {
         return decryptor.decrypt(string, loadSecretKey());
     }
 
@@ -56,14 +55,14 @@ public class EncryptionService {
         protParam = new KeyStore.PasswordProtection(password);
     }
 
-    public SecretKey loadSecretKey() throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException {
+    private SecretKey loadSecretKey() throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException {
         SecretKey secretKey;
         KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry("secretKey", protParam);
         secretKey = secretKeyEntry.getSecretKey();
         return secretKey;
     }
 
-    public void storeSecretKey(SecretKey key) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
+    private void storeSecretKey(SecretKey key) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
         KeyStore.SecretKeyEntry secretKeyEntry = new KeyStore.SecretKeyEntry(key);
         keyStore.setEntry("secretKey", secretKeyEntry, protParam);
         FileOutputStream fileOutputStream = new FileOutputStream(ksFile);

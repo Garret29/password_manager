@@ -58,10 +58,7 @@ public class Beans {
     @Bean
     public File encryptedFile(){
         File parent = new File(System.getProperty("user.home"), ".Garret29PasswordManager");
-        parent.mkdirs();
-
-
-        return new File(parent, "importantData_xD");
+        return new File(parent, "data_01");
     }
 
     @Bean
@@ -78,10 +75,7 @@ public class Beans {
     @Bean
     public File ksFile(){
         File parent = new File(System.getProperty("user.home"), ".Garret29PasswordManager");
-        parent.mkdirs();
-        File file = new File(parent, "ks_Data_xD");
-
-        return file;
+        return new File(parent, "data_02");
     }
 
     @Bean

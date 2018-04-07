@@ -17,6 +17,7 @@ public class PasswordManagerApp extends Application {
 
     private Parent root;
     private ConfigurableApplicationContext springContext;
+    private Controller controller;
 
     public static void main(String[] args) {
         launch(PasswordManagerApp.class, args);
@@ -29,6 +30,7 @@ public class PasswordManagerApp extends Application {
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
+        controller.initLoginView();
     }
 
     @Override
@@ -37,13 +39,12 @@ public class PasswordManagerApp extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getClassLoader().getResource("views/loginView.fxml"));
         fxmlLoader.setControllerFactory(springContext::getBean);
         root = fxmlLoader.load();
-        Controller controller = fxmlLoader.getController();
+        controller = fxmlLoader.getController();
         controller.changeControllerFactory(springContext::getBean);
-        controller.initLoginView();
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         springContext.stop();
         springContext.close();
     }

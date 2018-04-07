@@ -4,19 +4,20 @@
 <?import javafx.scene.layout.AnchorPane?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="212.0" prefWidth="292.0" xmlns="http://javafx.com/javafx/8"
             fx:controller="pl.piotrowski.controller.Controller">
-    <children>
-        <Button layoutX="120.0" fx:id="loginButton" layoutY="162.0" mnemonicParsing="false" onAction="#login"
-                text="Submit" style="-fx-padding: 5 5 5 5"/>
-        <PasswordField fx:id="loginPasswordField" layoutX="129.0" layoutY="65.0" style="-fx-padding: 5 5 5 5"/>
-        <Label layoutX="23.0" layoutY="69.0" text="Password:" style="-fx-padding: 5 5 5 5"/>
-        <Label fx:id="wrongLabel" layoutX="94.0" layoutY="137.0" text="Incorrect password!" textFill="RED"
-               visible="false" style="-fx-padding: 5 5 5 5"/>
-        <PasswordField fx:id="confirmPasswordField" layoutX="129.0" layoutY="103.0" visible="false" style="-fx-padding: 5 5 5 5"/>
-        <Label fx:id="confirmLabel" layoutX="14.0" layoutY="107.0" text="Confirm password:" visible="false" style="-fx-padding: 5 5 5 5"/>
-        <Label fx:id="newPasswordLabel" layoutX="75.0" layoutY="28.0" text="Set password for manager:" visible="false" style="-fx-padding: 5 5 5 5"/>
-        <Label fx:id="matchLabel" layoutX="85.0" layoutY="137.0" text="Passwords don't match or are empty"
-               visible="false" style="-fx-padding: 5 5 5 5"/>
-        <Button onAction="#firstLogin" fx:id="firstLoginButton" layoutX="121.0" layoutY="162.0" mnemonicParsing="false"
-                text="Submit" visible="false" style="-fx-padding: 5 5 5 5"/>
-    </children>
+    <Button layoutX="120.0" fx:id="loginButton" layoutY="162.0" mnemonicParsing="false" onAction="#login"
+            text="Submit" style="-fx-padding: 5 5 5 5"/>
+    <PasswordField fx:id="loginPasswordField" layoutX="129.0" layoutY="65.0" style="-fx-padding: 5 5 5 5"/>
+    <Label layoutX="23.0" layoutY="69.0" text="Password:" style="-fx-padding: 5 5 5 5"/>
+    <Label fx:id="wrongLabel" layoutX="94.0" layoutY="137.0" text="Incorrect password!" textFill="RED"
+           visible="false" style="-fx-padding: 5 5 5 5"/>
+    <PasswordField fx:id="confirmPasswordField" layoutX="129.0" layoutY="103.0" visible="false"
+                   style="-fx-padding: 5 5 5 5"/>
+    <Label fx:id="confirmLabel" layoutX="14.0" layoutY="107.0" text="Confirm password:" visible="false"
+           style="-fx-padding: 5 5 5 5"/>
+    <Label fx:id="newPasswordLabel" layoutX="75.0" layoutY="28.0" text="Set password for manager:" visible="false"
+           style="-fx-padding: 5 5 5 5"/>
+    <Label fx:id="matchLabel" layoutX="85.0" layoutY="137.0" text="Passwords don't match or are empty"
+           visible="false" style="-fx-padding: 5 5 5 5"/>
+    <Button onAction="#firstLogin" fx:id="firstLoginButton" layoutX="121.0" layoutY="162.0" mnemonicParsing="false"
+            text="Submit" visible="false" style="-fx-padding: 5 5 5 5"/>
 </AnchorPane>

@@ -1,9 +1,11 @@
 package pl.piotrowski.service.util;
 
 import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 public class AESEncryptor implements Encryptor, Decryptor {
@@ -37,7 +39,7 @@ public class AESEncryptor implements Encryptor, Decryptor {
         return new SecretKeySpec(key, "AES");
     }
 
-    private void init(SecureRandom secureRandom){
+    private void init(SecureRandom secureRandom) {
         KeyGenerator keyGenerator;
         try {
             keyGenerator = KeyGenerator.getInstance("AES");
