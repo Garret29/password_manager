@@ -1,35 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<ScrollPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="550.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8"
-            fx:controller="pl.piotrowski.controller.Controller" fitToWidth="true">
-    <GridPane >
+<ScrollPane fitToWidth="true" prefHeight="550.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.piotrowski.controller.Controller">
+    <GridPane>
         <columnConstraints>
-            <ColumnConstraints hgrow="ALWAYS" />
+            <ColumnConstraints hgrow="ALWAYS"/>
         </columnConstraints>
         <rowConstraints>
             <RowConstraints/>
             <RowConstraints/>
         </rowConstraints>
-        <VBox style="-fx-padding: 10 5 10 5" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
-            <HBox style="-fx-padding: 10 5 10 5">
-                <Button layoutX="14.0" layoutY="331.0" mnemonicParsing="false" onAction="#addAccount"
-                        style="-fx-padding: 10 10 10 10" text="Add"/>
-                <CheckBox fx:id="editCheckbox" layoutX="114.0" layoutY="335.0" mnemonicParsing="false"
-                          onAction="#setEditing" style="-fx-padding: 10 10 10 10" text="Editing"/>
-            </HBox>
-            <HBox style="-fx-padding: 5 5 5 5">
-                <Label layoutX="10.0" layoutY="371.0" style="-fx-padding: 5 5 5 5" text="Account:"/>
-                <TextField fx:id="accountField" layoutX="67.0" layoutY="367.0"
-                           style="-fx-padding: 5 5 5 5"/>
-            </HBox>
-            <HBox style="-fx-padding: 5 5 5 5">
-                <Label layoutX="7.0" layoutY="408.0" style="-fx-padding: 5 5 5 5" text="Password:"/>
-                <PasswordField fx:id="passwordField" layoutX="67.0" layoutY="404.0"
-                               style="-fx-padding: 5 5 5 5"/>
-            </HBox>
-        </VBox>
         <TableView fx:id="tableView" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"/>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+            <VBox style="-fx-padding: 10 5 10 5" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0"
+                  AnchorPane.topAnchor="10.0">
+                <HBox style="-fx-padding: 10 5 10 5">
+                    <VBox.margin>
+                        <Insets left="15.0"/>
+                    </VBox.margin>
+                    <Button layoutX="14.0" layoutY="331.0" mnemonicParsing="false"
+                            onAction="#addAccount" style="-fx-padding: 10 10 10 10" text="Add"/>
+                    <CheckBox fx:id="editCheckbox" layoutX="114.0" layoutY="335.0"
+                              mnemonicParsing="false" onAction="#setEditing"
+                              style="-fx-padding: 10 10 10 10" text="Editing"/>
+                </HBox>
+                <GridPane>
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" maxWidth="95.0" minWidth="10.0" prefWidth="76.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="145.0" minWidth="10.0"
+                                           prefWidth="124.0"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
+                    </rowConstraints>
+                    <Label style="-fx-padding: 5 5 5 5" text="Account:" GridPane.halignment="RIGHT"/>
+                    <TextField fx:id="accountField" style="-fx-padding: 5 5 5 5"
+                               GridPane.columnIndex="1"/>
+                    <PasswordField fx:id="passwordField" style="-fx-padding: 5 5 5 5"
+                                   GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <Label style="-fx-padding: 5 5 5 5" text="Password:" GridPane.halignment="RIGHT"
+                           GridPane.rowIndex="1"/>
+                </GridPane>
+            </VBox>
+        </AnchorPane>
     </GridPane>
 </ScrollPane>
