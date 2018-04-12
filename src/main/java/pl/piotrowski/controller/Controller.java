@@ -8,6 +8,7 @@ import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -15,6 +16,10 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -24,6 +29,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +42,9 @@ import pl.piotrowski.service.PasswordStorageService;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.awt.*;
+import java.awt.Menu;
+import java.awt.MenuItem;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -91,6 +100,7 @@ public class Controller {
 
             try {
                 passwordStorageService.save(account);
+
                 if (!accounts.contains(account)) {
                     accounts.add(account);
                     tableView.setItems(accounts);
@@ -207,9 +217,48 @@ public class Controller {
         stage.setTitle("Password manager");
         stage.setScene(scene);
         stage.setResizable(true);
+
+        initTableView();
+
+        if(SystemTray.isSupported()){
+            Platform.setImplicitExit(false);
+
+            SystemTray tray = SystemTray.getSystemTray();
+            java.awt.Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("gfx/icon.png"));
+
+            stage.setOnCloseRequest(event -> Platform.runLater(() -> {
+                if (SystemTray.isSupported()) {
+                    stage.hide();
+                } else {
+                    System.exit(0);
+                }
+            }));
+
+            PopupMenu popupMenu = new PopupMenu();
+            MenuItem exitItem = new MenuItem("exit");
+            exitItem.addActionListener((ae)-> System.exit(0));
+            popupMenu.add(exitItem);
+
+            MenuItem showItem = new MenuItem("show");
+            showItem.addActionListener((ae)-> Platform.runLater(stage::show));
+            popupMenu.add(showItem);
+
+
+            TrayIcon trayIcon = new TrayIcon(image, "Garret29 Password Manager", popupMenu);
+            trayIcon.setImageAutoSize(true);
+            trayIcon.addActionListener((ae)-> Platform.runLater(stage::show));
+            try {
+                tray.add(trayIcon);
+            } catch (AWTException e) {
+                showExceptionDialog(e);
+            }
+        }
+
         source.hide();
         stage.show();
+    }
 
+    private void initTableView() {
         TableColumn<Account, String> nameCol = new TableColumn<>("Name");
         nameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
 
@@ -272,11 +321,12 @@ public class Controller {
         passwordCol.setOnEditCommit(
                 event -> {
                     Account account = event.getTableView().getItems().get(event.getTablePosition().getRow());
+                    String oldPassword = account.getPassword();
                     account.setPassword(event.getNewValue());
                     try {
                         passwordStorageService.persist();
                     } catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
-                        account.setPassword(event.getOldValue());
+                        account.setPassword(oldPassword);
                         showExceptionDialog(e);
                     }
                 }
