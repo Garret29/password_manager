@@ -20,7 +20,6 @@ public class PasswordManagerApp extends Application {
     private Parent root;
     private ConfigurableApplicationContext springContext;
     private Controller controller;
-    private String[] args;
 
     public static void main(String[] args)
     {
