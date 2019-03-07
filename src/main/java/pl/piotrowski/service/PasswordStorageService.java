@@ -88,6 +88,11 @@ public class PasswordStorageService {
         persist();
     }
 
+    public void changePassword(char[] oldPassword, char[] newPassword){
+        System.out.println(oldPassword);
+        System.out.println(newPassword);
+    }
+
     private Account[] getAccounts(){
         Account[] accounts = new Account[accountsSet.toArray().length];
         return accountsSet.toArray(accounts);

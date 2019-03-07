@@ -8,7 +8,6 @@ import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -17,6 +16,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -29,8 +29,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+import javafx.util.Pair;
 import javafx.util.StringConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,12 +38,12 @@ import pl.piotrowski.controller.util.ControllerUtils;
 import pl.piotrowski.model.Account;
 import pl.piotrowski.service.EncryptionService;
 import pl.piotrowski.service.PasswordStorageService;
+import sun.security.util.Password;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.awt.*;
-import java.awt.Menu;
 import java.awt.MenuItem;
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +55,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.Optional;
 
 @Component
 public class Controller {
@@ -123,14 +124,14 @@ public class Controller {
             newPasswordLabel.setVisible(true);
             loginButton.setVisible(false);
             firstLoginButton.setVisible(true);
-            confirmPasswordField.setOnKeyPressed((keyEvent)->{
-                if (keyEvent.getCode().equals(KeyCode.ENTER)){
+            confirmPasswordField.setOnKeyPressed((keyEvent) -> {
+                if (keyEvent.getCode().equals(KeyCode.ENTER)) {
                     firstLogin(keyEvent);
                 }
             });
         } else {
-            loginPasswordField.setOnKeyPressed((keyEvent)->{
-                if (keyEvent.getCode().equals(KeyCode.ENTER)){
+            loginPasswordField.setOnKeyPressed((keyEvent) -> {
+                if (keyEvent.getCode().equals(KeyCode.ENTER)) {
                     login(keyEvent);
                 }
             });
@@ -203,6 +204,61 @@ public class Controller {
         passwordStorageService.initKeyStore(loginPasswordField.getText().toCharArray());
     }
 
+    public void changeMasterPasswd(ActionEvent actionEvent) {
+        showChangePasswordDialog().ifPresent(passwords -> {
+            passwordStorageService.changePassword(passwords.getKey(), passwords.getValue());
+        });
+    }
+
+    private Optional<Pair<char[], char[]>> showChangePasswordDialog(){
+        Dialog<Pair<char[], char[]>> dialog = new Dialog<>();
+        dialog.setTitle("Change master password dialog");
+
+        ButtonType submitButtonType = new ButtonType("Submit", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(submitButtonType, ButtonType.CANCEL);
+
+        GridPane gridPane = new GridPane();
+        gridPane.setHgap(5);
+        gridPane.setVgap(5);
+        gridPane.setPadding(new Insets(20,150,10,10));
+
+        PasswordField oldPasswordField = new PasswordField();
+        PasswordField newPasswordField = new PasswordField();
+        PasswordField newPasswordConfirmField = new PasswordField();
+
+        gridPane.add(new Label("Old password:"),0,0);
+        gridPane.add(new Label("New password:"),0,1);
+        gridPane.add(new Label("Confirm new password:"),0,2);
+        gridPane.add(oldPasswordField, 1, 0);
+        gridPane.add(newPasswordField, 1, 1);
+        gridPane.add(newPasswordConfirmField, 1, 2);
+
+        Node changePasswordButton = dialog.getDialogPane().lookupButton(submitButtonType);
+        changePasswordButton.setDisable(true);
+
+        newPasswordField.textProperty().addListener(((observable, oldValue, newValue) -> {
+            changePasswordButton.setDisable(!newValue.equals(newPasswordConfirmField.getText()));
+        }));
+
+        newPasswordConfirmField.textProperty().addListener(((observable, oldValue, newValue) -> {
+            changePasswordButton.setDisable(!newValue.equals(newPasswordField.getText()));
+        }));
+
+        dialog.getDialogPane().setContent(gridPane);
+
+        Platform.runLater(oldPasswordField::requestFocus);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == submitButtonType) {
+                return new Pair<>(oldPasswordField.getText().toCharArray(), newPasswordField.getText().toCharArray());
+            }
+            return null;
+        });
+
+        Optional<Pair<char[], char[]>> result = dialog.showAndWait();
+        return result;
+    }
+
     private void initMainView(Node node) {
         Parent pane;
         Stage stage = new Stage();
@@ -220,7 +276,7 @@ public class Controller {
 
         initTableView();
 
-        if(SystemTray.isSupported()){
+        if (SystemTray.isSupported()) {
             Platform.setImplicitExit(false);
 
             SystemTray tray = SystemTray.getSystemTray();
@@ -236,17 +292,17 @@ public class Controller {
 
             PopupMenu popupMenu = new PopupMenu();
             MenuItem exitItem = new MenuItem("exit");
-            exitItem.addActionListener((ae)-> System.exit(0));
+            exitItem.addActionListener((ae) -> System.exit(0));
             popupMenu.add(exitItem);
 
             MenuItem showItem = new MenuItem("show");
-            showItem.addActionListener((ae)-> Platform.runLater(stage::show));
+            showItem.addActionListener((ae) -> Platform.runLater(stage::show));
             popupMenu.add(showItem);
 
 
             TrayIcon trayIcon = new TrayIcon(image, "Garret29 Password Manager", popupMenu);
             trayIcon.setImageAutoSize(true);
-            trayIcon.addActionListener((ae)-> Platform.runLater(stage::show));
+            trayIcon.addActionListener((ae) -> Platform.runLater(stage::show));
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
