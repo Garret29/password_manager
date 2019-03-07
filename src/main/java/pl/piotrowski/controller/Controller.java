@@ -200,7 +200,7 @@ public class Controller {
     }
 
     private void initServices() throws NoSuchAlgorithmException, IOException, CertificateException {
-        encryptionService.initKeyStore(loginPasswordField.getText().toCharArray());
+        passwordStorageService.initKeyStore(loginPasswordField.getText().toCharArray());
     }
 
     private void initMainView(Node node) {

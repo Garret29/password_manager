@@ -20,52 +20,26 @@ import java.security.cert.CertificateException;
 public class EncryptionService {
     private Encryptor encryptor;
     private Decryptor decryptor;
-    private KeyStore keyStore;
-    private File ksFile;
-    private KeyStore.PasswordProtection protParam;
+    private PasswordStorageService passwordStorageService;
 
     @Autowired
-    public EncryptionService(Encryptor encryptor, Decryptor decryptor, KeyStore keyStore, File ksFile) {
+    public EncryptionService(Encryptor encryptor, Decryptor decryptor) {
         this.encryptor = encryptor;
         this.decryptor = decryptor;
-        this.keyStore = keyStore;
-        this.ksFile = ksFile;
     }
 
     String getEncryption(String string) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchPaddingException {
         SecretKey secretKey = encryptor.generateKey();
-        storeSecretKey(secretKey);
+        passwordStorageService.storeSecretKey(secretKey);
         return encryptor.encrypt(string, secretKey);
     }
 
     String getDecryption(String string) throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException {
-        return decryptor.decrypt(string, loadSecretKey());
+        return decryptor.decrypt(string, passwordStorageService.loadSecretKey());
     }
 
-    public void initKeyStore(char[] password) throws IOException, NoSuchAlgorithmException, CertificateException {
-
-
-        if (ksFile.exists()) {
-            FileInputStream fileInputStream = new FileInputStream(ksFile);
-            keyStore.load(fileInputStream, password);
-        } else {
-            keyStore.load(null, password);
-        }
-
-        protParam = new KeyStore.PasswordProtection(password);
-    }
-
-    private SecretKey loadSecretKey() throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException {
-        SecretKey secretKey;
-        KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry("secretKey", protParam);
-        secretKey = secretKeyEntry.getSecretKey();
-        return secretKey;
-    }
-
-    private void storeSecretKey(SecretKey key) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
-        KeyStore.SecretKeyEntry secretKeyEntry = new KeyStore.SecretKeyEntry(key);
-        keyStore.setEntry("secretKey", secretKeyEntry, protParam);
-        FileOutputStream fileOutputStream = new FileOutputStream(ksFile);
-        keyStore.store(fileOutputStream, protParam.getPassword());
+    @Autowired
+    public void setPasswordStorageService(PasswordStorageService passwordStorageService) {
+        this.passwordStorageService = passwordStorageService;
     }
 }

@@ -9,14 +9,14 @@ import pl.piotrowski.model.Account;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableEntryException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.HashSet;
 
@@ -26,13 +26,17 @@ public class PasswordStorageService {
     private HashSet<Account> accountsSet;
     private File encryptedFile;
     private ObjectMapper objectMapper;
+    private KeyStore keyStore;
+    private File ksFile;
+    private KeyStore.ProtectionParameter protParam;
 
     @Autowired
-    public PasswordStorageService(EncryptionService encryptionService, HashSet<Account> accountsSet, File encryptedFile, ObjectMapper objectMapper) {
-        this.encryptionService = encryptionService;
+    public PasswordStorageService(HashSet<Account> accountsSet, File encryptedFile, ObjectMapper objectMapper, KeyStore keyStore, File ksFile) {
         this.accountsSet = accountsSet;
         this.encryptedFile = encryptedFile;
         this.objectMapper = objectMapper;
+        this.keyStore = keyStore;
+        this.ksFile = ksFile;
     }
 
     public void save(Account account) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
@@ -46,6 +50,30 @@ public class PasswordStorageService {
         encryptedString = encryptionService.getEncryption(string);
 
         Files.write(Paths.get(encryptedFile.toURI()), encryptedString.getBytes());
+    }
+
+    public void initKeyStore(char[] password) throws IOException, NoSuchAlgorithmException, CertificateException {
+
+        if (ksFile.exists()) {
+            FileInputStream fileInputStream = new FileInputStream(ksFile);
+            keyStore.load(fileInputStream, password);
+        } else {
+            keyStore.load(null, password);
+        }
+
+        protParam = new KeyStore.PasswordProtection(password);
+    }
+
+    SecretKey loadSecretKey() throws NoSuchAlgorithmException, UnrecoverableEntryException, KeyStoreException {
+        KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry("secretKey", protParam);
+        return secretKeyEntry.getSecretKey();
+    }
+
+    void storeSecretKey(SecretKey key) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
+        KeyStore.SecretKeyEntry secretKeyEntry = new KeyStore.SecretKeyEntry(key);
+        keyStore.setEntry("secretKey", secretKeyEntry, protParam);
+        FileOutputStream fileOutputStream = new FileOutputStream(ksFile);
+        keyStore.store(fileOutputStream, ((KeyStore.PasswordProtection) protParam).getPassword());
     }
 
     public Account[] load() throws IOException, UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
@@ -63,5 +91,10 @@ public class PasswordStorageService {
     private Account[] getAccounts(){
         Account[] accounts = new Account[accountsSet.toArray().length];
         return accountsSet.toArray(accounts);
+    }
+
+    @Autowired
+    public void setEncryptionService(EncryptionService encryptionService) {
+        this.encryptionService = encryptionService;
     }
 }
