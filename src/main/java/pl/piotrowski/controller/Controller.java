@@ -206,7 +206,11 @@ public class Controller {
 
     public void changeMasterPasswd(ActionEvent actionEvent) {
         showChangePasswordDialog().ifPresent(passwords -> {
-            passwordStorageService.changePassword(passwords.getKey(), passwords.getValue());
+            try {
+                passwordStorageService.changePassword(passwords.getKey(), passwords.getValue());
+            } catch (UnrecoverableEntryException | IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException e) {
+                showExceptionDialog(e);
+            }
         });
     }
 
@@ -255,8 +259,7 @@ public class Controller {
             return null;
         });
 
-        Optional<Pair<char[], char[]>> result = dialog.showAndWait();
-        return result;
+        return dialog.showAndWait();
     }
 
     private void initMainView(Node node) {
@@ -273,6 +276,8 @@ public class Controller {
         stage.setTitle("Password manager");
         stage.setScene(scene);
         stage.setResizable(true);
+        stage.setMinHeight(470);
+        stage.setMinWidth(470);
 
         initTableView();
 

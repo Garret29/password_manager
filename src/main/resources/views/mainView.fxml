@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fitToWidth="true" prefHeight="550.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.piotrowski.controller.Controller">
+<ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="550.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.piotrowski.controller.Controller">
    <content>
        <GridPane>
            <columnConstraints>
@@ -17,10 +17,10 @@
                <RowConstraints />
            </rowConstraints>
           <children>
-              <TableView fx:id="tableView" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
+              <TableView fx:id="tableView" minHeight="280.0" minWidth="300.0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS" />
               <AnchorPane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
                  <children>
-                     <VBox style="-fx-padding: 10 5 10 5" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
+                     <VBox minHeight="-Infinity" minWidth="-Infinity" prefHeight="154.0" prefWidth="370.0" style="-fx-padding: 10 5 10 5" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0">
                         <children>
                             <HBox style="-fx-padding: 10 5 10 5">
                                 <VBox.margin>
@@ -35,7 +35,7 @@
                                 <columnConstraints>
                                     <ColumnConstraints hgrow="NEVER" maxWidth="95.0" minWidth="10.0" prefWidth="76.0" />
                                     <ColumnConstraints hgrow="SOMETIMES" maxWidth="145.0" minWidth="10.0" prefWidth="124.0" />
-                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="145.0" minWidth="10.0" prefWidth="124.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
                                 </columnConstraints>
                                 <rowConstraints>
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -46,7 +46,7 @@
                                    <TextField fx:id="accountField" style="-fx-padding: 5 5 5 5" GridPane.columnIndex="1" />
                                    <PasswordField fx:id="passwordField" style="-fx-padding: 5 5 5 5" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                    <Label style="-fx-padding: 5 5 5 5" text="Password:" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
-                                   <Button text="Change masterpassword" style="-fx-padding: 5 5 5 5" GridPane.columnIndex="2" GridPane.rowIndex="1" onAction="#changeMasterPasswd" />
+                                   <Button onAction="#changeMasterPasswd" prefHeight="27.0" prefWidth="150.0" style="-fx-padding: 5 5 5 5" text="Change masterpassword" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                                </children>
                             </GridPane>
                         </children>

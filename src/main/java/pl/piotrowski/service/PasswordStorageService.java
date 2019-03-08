@@ -10,10 +10,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
@@ -78,7 +75,8 @@ public class PasswordStorageService {
 
     public Account[] load() throws IOException, UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
         String encryptedString = new String(Files.readAllBytes(Paths.get(encryptedFile.toURI())));
-        accountsSet =  objectMapper.readValue(encryptionService.getDecryption(encryptedString), new TypeReference<HashSet<Account>>(){});
+        accountsSet = objectMapper.readValue(encryptionService.getDecryption(encryptedString), new TypeReference<HashSet<Account>>() {
+        });
 
         return getAccounts();
     }
@@ -88,12 +86,21 @@ public class PasswordStorageService {
         persist();
     }
 
-    public void changePassword(char[] oldPassword, char[] newPassword){
-        System.out.println(oldPassword);
-        System.out.println(newPassword);
+    public void changePassword(char[] oldPassword, char[] newPassword) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableEntryException {
+
+        InputStream keyStoreStream = new FileInputStream(ksFile);
+        keyStore.load(keyStoreStream, oldPassword);
+
+        KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry("secretKey", protParam);
+        protParam = new KeyStore.PasswordProtection(newPassword);
+        keyStore.setEntry("secretKey", secretKeyEntry, protParam);
+
+        FileOutputStream fileOutputStream = new FileOutputStream(ksFile);
+        keyStore.store(fileOutputStream, newPassword);
+        fileOutputStream.close();
     }
 
-    private Account[] getAccounts(){
+    private Account[] getAccounts() {
         Account[] accounts = new Account[accountsSet.toArray().length];
         return accountsSet.toArray(accounts);
     }
