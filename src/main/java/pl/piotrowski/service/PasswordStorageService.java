@@ -49,13 +49,16 @@ public class PasswordStorageService {
         Files.write(Paths.get(encryptedFile.toURI()), encryptedString.getBytes());
     }
 
-    public void initKeyStore(char[] password) throws IOException, NoSuchAlgorithmException, CertificateException {
+    public void initKeyStore(char[] password) throws IOException, NoSuchAlgorithmException, CertificateException, KeyStoreException {
 
         if (ksFile.exists()) {
             FileInputStream fileInputStream = new FileInputStream(ksFile);
             keyStore.load(fileInputStream, password);
         } else {
+            ksFile.createNewFile();
             keyStore.load(null, password);
+            FileOutputStream fileOutputStream = new FileOutputStream(ksFile);
+            keyStore.store(fileOutputStream, password);
         }
 
         protParam = new KeyStore.PasswordProtection(password);

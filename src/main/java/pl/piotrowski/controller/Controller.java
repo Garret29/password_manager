@@ -142,11 +142,11 @@ public class Controller {
         if (!loginPasswordField.getText().isEmpty() && !confirmPasswordField.getText().isEmpty() && loginPasswordField.getText().equals(confirmPasswordField.getText())) {
             try {
                 initServices();
-            } catch (NoSuchAlgorithmException | IOException | CertificateException e) {
+                Node node = (Node) event.getSource();
+                initMainView(node);
+            } catch (NoSuchAlgorithmException | IOException | CertificateException | KeyStoreException e) {
                 showExceptionDialog(e);
             }
-            Node node = (Node) event.getSource();
-            initMainView(node);
         } else {
             matchLabel.setVisible(true);
         }
@@ -200,7 +200,7 @@ public class Controller {
         }
     }
 
-    private void initServices() throws NoSuchAlgorithmException, IOException, CertificateException {
+    private void initServices() throws NoSuchAlgorithmException, IOException, CertificateException, KeyStoreException {
         passwordStorageService.initKeyStore(loginPasswordField.getText().toCharArray());
     }
 
