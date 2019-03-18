@@ -29,10 +29,10 @@ public class Beans {
     }
 
     @Bean
-    public Encryptor encryptor(){
+    public Encryptor encryptor() {
         return new AESEncryptor(secureRandom());
     }
-    
+
     @Bean
     public Decryptor decryptor() {
         return (Decryptor) encryptor();
@@ -40,30 +40,30 @@ public class Beans {
 
     @Bean
     @Scope("prototype")
-    public FXMLLoader loader(){
+    public FXMLLoader loader() {
         return new FXMLLoader(getClass().getClassLoader().getResource("views/mainView.fxml"));
     }
 
     @Bean
     @Scope("prototype")
-    public SecureRandom secureRandom(){
+    public SecureRandom secureRandom() {
         return new SecureRandom();
     }
 
     @Bean
-    public HashSet<Account> accountsSet(){
+    public HashSet<Account> accountsSet() {
         return new HashSet<>();
     }
 
     @Bean
-    public File encryptedFile(){
+    public File encryptedFile() {
         File parent = new File(System.getProperty("user.home"), ".Garret29PasswordManager");
         return new File(parent, "data_01");
     }
 
     @Bean
     @Scope("prototype")
-    public ObjectMapper objectMapper(){
+    public ObjectMapper objectMapper() {
         return new ObjectMapper();
     }
 
@@ -73,13 +73,14 @@ public class Beans {
     }
 
     @Bean
-    public File ksFile(){
+    public File ksFile() {
         File parent = new File(System.getProperty("user.home"), ".Garret29PasswordManager");
+        parent.mkdir();
         return new File(parent, "data_02");
     }
 
     @Bean
-    public ObservableSet<Account> accountWithVisiblePassword(){
+    public ObservableSet<Account> accountWithVisiblePassword() {
         return FXCollections.observableSet();
     }
 }
