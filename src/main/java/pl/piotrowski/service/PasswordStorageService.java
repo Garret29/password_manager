@@ -38,13 +38,15 @@ public class PasswordStorageService {
 
     public void save(Account account) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
         accountsSet.add(account);
-        persist();
+        saveToFile();
     }
 
-    public void persist() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException {
+    public void saveToFile() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, InvalidKeyException, BadPaddingException, NoSuchPaddingException, IllegalBlockSizeException {
         String encryptedString;
         String string = objectMapper.writeValueAsString(accountsSet);
-        encryptedString = encryptionService.getEncryption(string);
+        SecretKey secretKey = encryptionService.generateSecretKey();
+        storeSecretKey(secretKey);
+        encryptedString = encryptionService.getEncryption(string, secretKey);
 
         Files.write(Paths.get(encryptedFile.toURI()), encryptedString.getBytes());
     }
@@ -78,7 +80,7 @@ public class PasswordStorageService {
 
     public Account[] load() throws IOException, UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
         String encryptedString = new String(Files.readAllBytes(Paths.get(encryptedFile.toURI())));
-        accountsSet = objectMapper.readValue(encryptionService.getDecryption(encryptedString), new TypeReference<HashSet<Account>>() {
+        accountsSet = objectMapper.readValue(encryptionService.getDecryption(encryptedString, loadSecretKey()), new TypeReference<HashSet<Account>>() {
         });
 
         return getAccounts();
@@ -86,7 +88,7 @@ public class PasswordStorageService {
 
     public void remove(Account account) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, IllegalBlockSizeException, BadPaddingException, NoSuchPaddingException, InvalidKeyException {
         accountsSet.remove(account);
-        persist();
+        saveToFile();
     }
 
     public void changePassword(char[] oldPassword, char[] newPassword) throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableEntryException {

@@ -30,7 +30,7 @@ public class Beans {
 
     @Bean
     public Encryptor encryptor() {
-        return new AESEncryptor(secureRandom());
+        return new AESEncryptor();
     }
 
     @Bean
@@ -42,12 +42,6 @@ public class Beans {
     @Scope("prototype")
     public FXMLLoader loader() {
         return new FXMLLoader(getClass().getClassLoader().getResource("views/mainView.fxml"));
-    }
-
-    @Bean
-    @Scope("prototype")
-    public SecureRandom secureRandom() {
-        return new SecureRandom();
     }
 
     @Bean

@@ -11,10 +11,8 @@ import java.util.Base64;
 public class AESEncryptor implements Encryptor, Decryptor {
 
     private final String ALGO = "AES";
-    private byte[] key;
 
-    public AESEncryptor(SecureRandom secureRandom) {
-        init(secureRandom);
+    public AESEncryptor() {
     }
 
     public String encrypt(String string, Key key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
@@ -36,19 +34,14 @@ public class AESEncryptor implements Encryptor, Decryptor {
     }
 
     public SecretKey generateKey() {
-        return new SecretKeySpec(key, "AES");
-    }
-
-    private void init(SecureRandom secureRandom) {
-        KeyGenerator keyGenerator;
         try {
-            keyGenerator = KeyGenerator.getInstance("AES");
-            keyGenerator.init(128, secureRandom);
-            key = keyGenerator.generateKey().getEncoded();
+            KeyGenerator keyGenerator = KeyGenerator.getInstance(ALGO);
+            keyGenerator.init(128, new SecureRandom());
+            byte[] key = keyGenerator.generateKey().getEncoded();
+            return new SecretKeySpec(key, ALGO);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+            return null;
         }
     }
-
-
 }

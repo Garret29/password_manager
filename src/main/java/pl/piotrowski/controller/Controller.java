@@ -384,7 +384,7 @@ public class Controller {
                     String oldPassword = account.getPassword();
                     account.setPassword(event.getNewValue());
                     try {
-                        passwordStorageService.persist();
+                        passwordStorageService.saveToFile();
                     } catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | NoSuchPaddingException e) {
                         account.setPassword(oldPassword);
                         showExceptionDialog(e);
