@@ -38,7 +38,6 @@ import pl.piotrowski.controller.util.ControllerUtils;
 import pl.piotrowski.model.Account;
 import pl.piotrowski.service.EncryptionService;
 import pl.piotrowski.service.PasswordStorageService;
-import sun.security.util.Password;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
